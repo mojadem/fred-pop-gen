@@ -3,9 +3,12 @@ from pathlib import Path
 from pytask import DataCatalog
 
 DATA = Path(__file__).parent.joinpath("..", "data").resolve()
+DATA_CATALOG = DataCatalog()
 
 # TODO: paramaterize and support multiple of each file
-PERSONS_FILE = DATA / "input/56_2019_persons.csv"
-HOUSEHOLDS_FILE = DATA / "input/WY_2019_households_w_geom.csv"
+STATE_FIPS = 56
+STATE_ABBR = "WY"
+CENSUS_YEAR = 2019
 
-DATA_CATALOG = DataCatalog()
+PERSONS_FILE = DATA / f"input/{STATE_FIPS}_{CENSUS_YEAR}_persons.csv"
+HOUSEHOLDS_FILE = DATA / f"input/{STATE_ABBR}_{CENSUS_YEAR}_households_w_geom.csv"
