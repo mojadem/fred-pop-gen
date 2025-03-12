@@ -8,8 +8,9 @@ from fred_pop_gen.config import HOUSEHOLDS_FILE, PERSONS_FILE, DATA_CATALOG
 
 def task_read_persons_file(
     path: Path = PERSONS_FILE,
-) -> Annotated[pd.DataFrame, DATA_CATALOG["persons_df"]]:
+) -> Annotated[pd.DataFrame, DATA_CATALOG["persons"]]:
     """Loads the persons file into a DataFrame."""
+
     df = pd.read_csv(path, index_col=0)
 
     cols = df.columns.tolist()
@@ -31,8 +32,9 @@ def task_read_persons_file(
 
 def task_read_households_file(
     path: Path = HOUSEHOLDS_FILE,
-) -> Annotated[pd.DataFrame, DATA_CATALOG["households_df"]]:
+) -> Annotated[pd.DataFrame, DATA_CATALOG["households"]]:
     """Loads the households file into a DataFrame."""
+
     df = pd.read_csv(path, index_col="hh_id")
 
     cols = df.columns.tolist()
@@ -55,5 +57,14 @@ def task_read_households_file(
     assert cols == expected_cols, (
         f"households file did not contain expected columns: expected = {expected_cols}, actual = {cols}"
     )
+
+    fips_cols = [
+        "state_fips",
+        "puma_fips",
+        "county_fips",
+        "tract_fips",
+        "blkgrp_fips",
+    ]
+    df[fips_cols] = df[fips_cols].astype("string")
 
     return df
