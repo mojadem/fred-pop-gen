@@ -144,7 +144,6 @@ def task_assign_enrollment(
 
         choices = [Enrollment.PUBLIC, Enrollment.PRIVATE, Enrollment.NOT_ENROLLED]
         enrollment = random.choices(choices, enrollment_probabilities)[0]
-        # enrollment = np.random.choice(choices, p=enrollment_probabilities)
 
         return enrollment
 
