@@ -2,7 +2,6 @@ import random
 from pathlib import Path
 from typing import Annotated
 
-import numpy as np
 import pandas as pd
 import pytask
 import requests
