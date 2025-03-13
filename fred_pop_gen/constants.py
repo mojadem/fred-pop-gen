@@ -8,3 +8,22 @@ class Enrollment(Enum):
     PRIVATE = 1
     NOT_ENROLLED = 2
     NOT_SCHOOL_AGED = 3
+
+
+class Grade(Enum):
+    """Represents school grade levels."""
+
+    PREK = 0
+    K = 1
+    FIRST = 2
+    SECOND = 3
+    THIRD = 4
+    FOURTH = 5
+    FIFTH = 6
+    SIXTH = 7
+    SEVENTH = 8
+    EIGHTH = 9
+    NINTH = 10
+    TENTH = 11
+    ELEVENTH = 12
+    TWELFTH = 13
