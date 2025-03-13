@@ -67,4 +67,10 @@ def task_read_households_file(
     ]
     df[fips_cols] = df[fips_cols].astype("string")
 
+    column_map = {
+        "lat_4326": "lat",
+        "lon_4326": "lon",
+    }
+    df = df.rename(columns=column_map)
+
     return df
