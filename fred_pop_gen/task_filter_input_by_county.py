@@ -16,6 +16,13 @@ for county in get_county_fips():
         return filter_df_by_county(df, county)
 
     @task(id=county)
+    def get_persons_in_county(
+        p_df: Annotated[pd.DataFrame, DATA_CATALOG["persons"]],
+        hh_df: Annotated[pd.DataFrame, DATA_CATALOG[f"households_{county}"]],
+    ) -> Annotated[pd.DataFrame, DATA_CATALOG[f"persons_{county}"]]:
+        return p_df.loc[p_df["hh_id"].apply(lambda x: x in hh_df.index)]
+
+    @task(id=county)
     def get_public_schools_in_county(
         county: Annotated[str, county],
         df: Annotated[pd.DataFrame, DATA_CATALOG["public_schools"]],
