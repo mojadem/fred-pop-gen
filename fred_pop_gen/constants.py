@@ -26,3 +26,9 @@ class Grade(Enum):
     TENTH = 11
     ELEVENTH = 12
     TWELFTH = 13
+
+    @staticmethod
+    def is_grade_in_range(
+        grade: "Grade", lower_bound: "Grade", upper_bound: "Grade"
+    ) -> bool:
+        return grade.value >= lower_bound.value and grade.value <= upper_bound.value
