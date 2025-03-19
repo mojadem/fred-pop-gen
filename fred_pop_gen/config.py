@@ -1,9 +1,11 @@
 from pathlib import Path
 
 from pytask import DataCatalog
+import numpy as np
 
 DATA = Path(__file__).parent.joinpath("..", "data").resolve()
 DATA_CATALOG = DataCatalog()
+RNG = np.random.default_rng(0)
 
 # TODO: paramaterize and support multiple of each file
 STATE_FIPS = 56
