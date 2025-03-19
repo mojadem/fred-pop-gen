@@ -1,3 +1,4 @@
+from typing import Hashable
 import numpy as np
 import pandas as pd
 import requests
@@ -50,6 +51,10 @@ def get_county_fips() -> list[str]:
 
 def filter_df_by_county(df: pd.DataFrame, county_fips: str) -> pd.DataFrame:
     return df.loc[df["county_fips"] == county_fips]
+
+
+def get_persons_in_household(hh_id: Hashable, persons_df: pd.DataFrame) -> pd.DataFrame:
+    return persons_df.loc[persons_df["hh_id"] == hh_id]
 
 
 def haversine(lat1, lon1, lat2, lon2):
