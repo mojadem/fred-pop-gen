@@ -190,12 +190,16 @@ def strip_school_file_column_names(df: pd.DataFrame) -> pd.DataFrame:
 def post_format_schools_df(df: pd.DataFrame) -> pd.DataFrame:
     df["lowest_grade"] = df["lowest_grade"].apply(map_grade_level)
     df["highest_grade"] = df["highest_grade"].apply(map_grade_level)
+
+    # TODO: trim out bad values
+    df["county_fips"] = df["county_fips"].astype("string")
+    df["enrollment_total"] = pd.to_numeric(df["enrollment_total"], errors="coerce")
     df = df.set_index("id")
 
     return df
 
 
-def map_grade_level(grade: str) -> Grade:
+def map_grade_level(grade: str) -> Grade | None:
     grade = grade.lower().strip()
 
     match grade:
@@ -230,4 +234,4 @@ def map_grade_level(grade: str) -> Grade:
         case "12th grade":
             return Grade.TWELFTH
         case _:
-            raise ValueError(f"Unknown grade: {grade}")
+            return None
