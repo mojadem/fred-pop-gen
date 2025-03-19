@@ -7,7 +7,6 @@ class Enrollment(Enum):
     PUBLIC = 0
     PRIVATE = 1
     NOT_ENROLLED = 2
-    NOT_SCHOOL_AGED = 3
 
 
 class Grade(Enum):
