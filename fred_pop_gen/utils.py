@@ -1,5 +1,51 @@
 import numpy as np
 import pandas as pd
+import requests
+
+from fred_pop_gen.config import CENSUS_YEAR, STATE_FIPS, DATA
+
+COUNTIES_FILE = DATA / f"input/{STATE_FIPS}_counties.txt"
+
+
+def _download_county_fips() -> None:
+    """
+    Downloads county FIPS codes from the census API and writes them to
+    COUNTIES_FILE.
+    """
+    # NOTE: we are using a DUMMY variable (B01001_001E) in the API call
+    # all we really need is the state and county values
+    url = f"https://api.census.gov/data/{CENSUS_YEAR}/acs/acs5?get=B01001_001E&for=county:*&in=state:{STATE_FIPS}"
+    res = requests.get(url)
+    res.raise_for_status()
+
+    data = res.json()
+
+    df = pd.DataFrame(data[1:], columns=data[0])
+
+    df["county_fips"] = df["state"] + df["county"]
+
+    counties = list(df["county_fips"])
+    counties.sort()
+
+    with open(DATA / f"input/{STATE_FIPS}_counties.txt", "w") as file:
+        file.write("\n".join(counties))
+
+
+def get_county_fips() -> list[str]:
+    """
+    Gets all county FIPS codes in the state for generating per-county tasks.
+    This is memoized to avoid unnecessary API calls.
+    """
+
+    if not COUNTIES_FILE.exists():
+        _download_county_fips()
+
+    counties = []
+    with open(COUNTIES_FILE, "r") as file:
+        for line in file.readlines():
+            counties.append(line.strip())
+
+    return counties
 
 
 def filter_df_by_county(df: pd.DataFrame, county_fips: str) -> pd.DataFrame:
