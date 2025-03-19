@@ -80,6 +80,15 @@ wheels = [
 ]
 
 [[package]]
+name = "cloudpickle"
+version = "3.1.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/52/39/069100b84d7418bc358d81669d5748efb14b9cceacd2f9c75f550424132f/cloudpickle-3.1.1.tar.gz", hash = "sha256:b216fa8ae4019d5482a8ac3c95d8f6346115d8835911fd4aefd1a445e4242c64", size = 22113 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/7e/e8/64c37fadfc2816a7701fa8a6ed8d87327c7d54eacfbfb6edab14a2f2be75/cloudpickle-3.1.1-py3-none-any.whl", hash = "sha256:c8c5a44295039331ee9dad40ba100a9c7297b6f988e50e87ccdf3765a668350e", size = 20992 },
+]
+
+[[package]]
 name = "colorama"
 version = "0.4.6"
 source = { registry = "https://pypi.org/simple" }
@@ -96,6 +105,7 @@ dependencies = [
     { name = "numpy" },
     { name = "pandas" },
     { name = "pytask" },
+    { name = "pytask-parallel" },
     { name = "requests" },
 ]
 
@@ -104,6 +114,7 @@ requires-dist = [
     { name = "numpy", specifier = ">=2.2.3" },
     { name = "pandas", specifier = ">=2.2.3" },
     { name = "pytask", specifier = ">=0.5.2" },
+    { name = "pytask-parallel", specifier = ">=0.5.1" },
     { name = "requests", specifier = ">=2.32.3" },
 ]
 
@@ -156,6 +167,18 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/f1/70/7703c29685631f5a7590aa73f1f1d3fa9a380e654b86af429e0934a32f7d/idna-3.10.tar.gz", hash = "sha256:12f65c9b470abda6dc35cf8e63cc574b1c52b11df2c86030af0ac09b01b13ea9", size = 190490 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl", hash = "sha256:946d195a0d259cbba61165e88e65941f16e9b36ea6ddb97f00452bae8b1287d3", size = 70442 },
+]
+
+[[package]]
+name = "loky"
+version = "3.4.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "cloudpickle" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/7e/7d/a66ba4e28ee37b87771f7cdf36e91e0d94a429cd2297a406443f34f6b9f0/loky-3.4.1.tar.gz", hash = "sha256:66db350de68c301299c882ace3b8f06ba5c4cb2c45f8fcffd498160ce8280753", size = 100148 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2e/4b/d5f8d45c28b193fe5974f95ecfa2bac87e268a543da298bab258ded6ae95/loky-3.4.1-py3-none-any.whl", hash = "sha256:7132da80d1a057b5917ff32c7867b65ed164aae84c259a1dbc44375791280c87", size = 54570 },
 ]
 
 [[package]]
@@ -347,6 +370,24 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/fa/7b/181fd3e705e7352bf3f435563dcf10f8e0a9dd77c65806f77f7402bce853/pytask-0.5.2.tar.gz", hash = "sha256:f51ef851af311e67f315468e07d65374931deec0189b9f7e4e32d89a144571b9", size = 99974 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/bd/7a/9f486465753fe54b9808040deccb9315abc981beae7383e2c9859732ea1d/pytask-0.5.2-py3-none-any.whl", hash = "sha256:183d526e0bd56982b0d332451a9f0735903b5f4f5c9f3e2c692b4358ec97d602", size = 130075 },
+]
+
+[[package]]
+name = "pytask-parallel"
+version = "0.5.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "attrs" },
+    { name = "click" },
+    { name = "cloudpickle" },
+    { name = "loky" },
+    { name = "pluggy" },
+    { name = "pytask" },
+    { name = "rich" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/1f/21/4ba97fe16541083fd51fe850518eef9dc8a4859fceadd1ad746af0db4755/pytask_parallel-0.5.1.tar.gz", hash = "sha256:cfc9e46cf9a27dcba3c34a03a65927fe209914c4b55580234791d6755da060af", size = 13498 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c3/e4/638fefad4f187286666ccb89d385676108520731317dfb9732f94c9637c5/pytask_parallel-0.5.1-py3-none-any.whl", hash = "sha256:e2b7b0edaa7e18d330379f04234096a7d16867f7d9c2ccfe7ae1ef4d899c2ae0", size = 17783 },
 ]
 
 [[package]]
