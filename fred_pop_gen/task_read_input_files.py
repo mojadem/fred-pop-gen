@@ -191,10 +191,12 @@ def post_format_schools_df(df: pd.DataFrame) -> pd.DataFrame:
     df["lowest_grade"] = df["lowest_grade"].apply(map_grade_level)
     df["highest_grade"] = df["highest_grade"].apply(map_grade_level)
 
-    # TODO: trim out bad values
     df["county_fips"] = df["county_fips"].astype("string")
     df["enrollment_total"] = pd.to_numeric(df["enrollment_total"], errors="coerce")
     df = df.set_index("id")
+
+    # TODO: should we recover schools with bad valuees instead of just dropping?
+    df = df.dropna()
 
     return df
 
