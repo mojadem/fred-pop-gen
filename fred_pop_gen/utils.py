@@ -4,6 +4,7 @@ import pandas as pd
 import requests
 
 from fred_pop_gen.config import CENSUS_YEAR, STATE_FIPS, DATA
+from fred_pop_gen.constants import Enrollment
 
 COUNTIES_FILE = DATA / f"input/{STATE_FIPS}_counties.txt"
 
@@ -53,8 +54,15 @@ def filter_df_by_county(df: pd.DataFrame, county_fips: str) -> pd.DataFrame:
     return df.loc[df["county_fips"] == county_fips]
 
 
-def get_persons_in_household(hh_id: Hashable, persons_df: pd.DataFrame) -> pd.DataFrame:
-    return persons_df.loc[persons_df["hh_id"] == hh_id]
+def get_persons_in_household(hh_id: Hashable, p_df: pd.DataFrame) -> pd.DataFrame:
+    return p_df.loc[p_df["hh_id"] == hh_id]
+
+
+def filter_persons_by_household_enrollment(
+    p_df: pd.DataFrame, hh_df: pd.DataFrame, enrollment: Enrollment
+) -> pd.DataFrame:
+    hh_df = hh_df.loc[hh_df["enrollment"] == enrollment]
+    return p_df.loc[p_df["hh_id"].isin(list(hh_df.index))]
 
 
 def haversine(lat1, lon1, lat2, lon2):
