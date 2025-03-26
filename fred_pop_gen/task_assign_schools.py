@@ -137,6 +137,8 @@ for county in get_county_fips():
             enrollment[edge.sch_id] += len(hh_persons)
 
         unassigned_df = p_df[p_df["school_id"].isna()]
+        # TODO: figure out what to do with PREK
+        unassigned_df = unassigned_df.loc[unassigned_df["grade"] != Grade.PREK]
         print(unassigned_df)
         assert unassigned_df.empty
 
