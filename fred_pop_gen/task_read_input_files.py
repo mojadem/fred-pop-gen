@@ -19,7 +19,7 @@ def task_read_persons_file(
 ) -> Annotated[pd.DataFrame, DATA_CATALOG["persons"]]:
     """Loads the persons file into a DataFrame."""
 
-    df = pd.read_csv(path, index_col=0)
+    df = pd.read_parquet(path)
 
     cols = df.columns.tolist()
     expected_cols = [
@@ -43,7 +43,7 @@ def task_read_households_file(
 ) -> Annotated[pd.DataFrame, DATA_CATALOG["households"]]:
     """Loads the households file into a DataFrame."""
 
-    df = pd.read_csv(path, index_col="hh_id")
+    df = pd.read_parquet(path)
 
     cols = df.columns.tolist()
     expected_cols = [
