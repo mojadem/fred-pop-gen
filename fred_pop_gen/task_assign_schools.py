@@ -1,15 +1,17 @@
-import random
 from itertools import product
 from typing import Annotated, Any, cast
 
 import pandas as pd
-import pytask
 from pytask import task
 
 from fred_pop_gen.config import DATA_CATALOG, RNG
 from fred_pop_gen.constants import Enrollment, Grade
-from fred_pop_gen.utils import get_county_fips, get_persons_in_household, haversine
-
+from fred_pop_gen.utils import (
+    filter_persons_by_household_enrollment,
+    get_county_fips,
+    get_persons_in_household,
+    haversine,
+)
 
 for county in get_county_fips():
 
@@ -49,15 +51,14 @@ for county in get_county_fips():
         enrollment_df: Annotated[pd.DataFrame, DATA_CATALOG["enrollment_proportions"]],
     ) -> Annotated[pd.DataFrame, DATA_CATALOG[f"households_w_enrollment_{county}"]]:
         enrollment_probabilities = enrollment_df.loc[county]
-        print(enrollment_probabilities)
 
-        def assign_enrollment_to_household(household: pd.Series) -> Enrollment:
+        def generate_random_enrollment() -> Enrollment:
             choices = [Enrollment.PUBLIC, Enrollment.PRIVATE, Enrollment.NOT_ENROLLED]
             i = RNG.choice(len(choices), 1, p=enrollment_probabilities.values)[0]
 
             return choices[i]
 
-        hh_df["enrollment"] = hh_df.apply(assign_enrollment_to_household, axis=1)
+        hh_df["enrollment"] = [generate_random_enrollment() for _ in range(len(hh_df))]
 
         return hh_df
 
@@ -93,42 +94,30 @@ for county in get_county_fips():
     def assign_public_schools_in_county(
         p_df: Annotated[pd.DataFrame, DATA_CATALOG[f"persons_w_grade_{county}"]],
         hh_df: Annotated[
-            pd.DataFrame,
-            DATA_CATALOG[f"households_w_enrollment_{county}"],
+            pd.DataFrame, DATA_CATALOG[f"households_w_enrollment_{county}"]
         ],
         pubsch_df: Annotated[pd.DataFrame, DATA_CATALOG[f"public_schools_{county}"]],
         dist_df: Annotated[pd.DataFrame, DATA_CATALOG[f"pubsch_hh_distance_{county}"]],
     ) -> Annotated[pd.DataFrame, DATA_CATALOG[f"persons_w_school_{county}"]]:
-        # initialize household assignment statuses
-        hh_df["assigned"] = False
-
-        # initialize school assignment columns
-        p_df["school_id"] = None
+        p_df = filter_persons_by_household_enrollment(p_df, hh_df, Enrollment.PUBLIC)
+        p_df["school_id"] = pd.NA
 
         # track current number of assigned students per school
         enrollment = {}
 
-        # initialize enrollment to 0 for every school
         for sch_id in list(pubsch_df.index):
             enrollment[sch_id] = 0
 
         for edge in dist_df.itertuples():
-            # cast to Any to avoid static typing issues with accessint
+            # cast to Any to avoid static typing issues with accessing
             # NamedTuple fields
             edge: Any = cast(Any, edge)
 
-            pubsch = pubsch_df.loc[edge.sch_id]
-            hh = hh_df.loc[edge.hh_id]
+            sch = pubsch_df.loc[edge.sch_id]
 
-            # skip this edge if school is beyond enrollment capacity
-            if enrollment[edge.sch_id] > pubsch["enrollment_total"]:
+            if enrollment[edge.sch_id] > sch["enrollment_total"]:
                 continue
 
-            # skip this edge if house has already been assigned
-            if hh["assigned"]:
-                continue
-
-            # get the children in the household
             hh_persons = get_persons_in_household(edge.hh_id, p_df)
 
             # filter by children who have not yet been assigned
@@ -137,37 +126,19 @@ for county in get_county_fips():
             # filter by children who are eligible for the school
             def check_if_school_offers_students_grade(grade: Grade) -> bool:
                 return Grade.is_grade_in_range(
-                    grade, pubsch["lowest_grade"], pubsch["highest_grade"]
+                    grade, sch["lowest_grade"], sch["highest_grade"]
                 )
 
-            hh_persons_assigned = hh_persons[
+            hh_persons = hh_persons[
                 hh_persons["grade"].apply(check_if_school_offers_students_grade)
             ]
 
-            # assign children to school
-            p_df.loc[hh_persons_assigned.index, "school_id"] = edge.sch_id
+            p_df.loc[hh_persons.index, "school_id"] = edge.sch_id
+            enrollment[edge.sch_id] += len(hh_persons)
 
-            # increment enrollment counts
-            enrollment[edge.sch_id] += len(hh_persons_assigned)
-
-            # read in updated household children
-            hh_persons = get_persons_in_household(edge.hh_id, p_df)
-
-            # if all children in the household have been assigned, mark the
-            # household as assigned
-            if not hh_persons["school_id"].isnull().any():
-                hh_df.loc[edge.hh_id, "assigned"] = True
-
-        print(p_df)
-
-        print("assigned:")
-        print(p_df[~p_df["school_id"].isnull()])
-        print("not assigned:")
-        print(p_df[p_df["school_id"].isnull()])
-
-        print(enrollment)
-        print(pubsch_df["enrollment_total"])
-        assert False
+        unassigned_df = p_df[p_df["school_id"].isna()]
+        print(unassigned_df)
+        assert unassigned_df.empty
 
         return p_df
 
