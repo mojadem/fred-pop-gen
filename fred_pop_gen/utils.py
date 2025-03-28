@@ -29,7 +29,7 @@ def _download_county_fips() -> None:
     counties = list(df["county_fips"])
     counties.sort()
 
-    with open(DATA / f"input/{STATE_FIPS}_counties.txt", "w") as file:
+    with open(COUNTIES_FILE, "w") as file:
         file.write("\n".join(counties))
 
 
