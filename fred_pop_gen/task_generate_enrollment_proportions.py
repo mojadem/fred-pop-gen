@@ -54,7 +54,7 @@ API_VARS = PUBLIC_SCHOOL_COLS + PRIVATE_SCHOOL_COLS + NOT_ENROLLED_COLS
 
 @pytask.mark.persist
 def task_get_enrollment_census_data(
-    path: Annotated[Path, Product] = DATA / "input/enrollment-data.pkl",
+    path: Annotated[Path, Product] = DATA / f"input/enrollment-data-{STATE_FIPS}.pkl",
 ) -> None:
     """Saves enrollment data from the Census API."""
 
@@ -72,7 +72,7 @@ def task_get_enrollment_census_data(
 
 
 def task_generate_enrollment_totals(
-    path: Path = DATA / "input/enrollment-data.pkl",
+    path: Path = DATA / f"input/enrollment-data-{STATE_FIPS}.pkl",
 ) -> Annotated[pd.DataFrame, DATA_CATALOG[f"enrollment_totals_{STATE_FIPS}"]]:
     """Generates totals for each enrollment status."""
 

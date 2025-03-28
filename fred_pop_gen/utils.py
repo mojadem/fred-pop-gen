@@ -6,7 +6,7 @@ import requests
 from fred_pop_gen.config import CENSUS_YEAR, STATE_FIPS, DATA
 from fred_pop_gen.constants import Enrollment
 
-COUNTIES_FILE = DATA / f"input/{STATE_FIPS}_counties.txt"
+COUNTIES_FILE = DATA / f"input/counties-{STATE_FIPS}.txt"
 
 
 def _download_county_fips() -> None:
