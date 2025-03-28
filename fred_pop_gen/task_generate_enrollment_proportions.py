@@ -73,7 +73,7 @@ def task_get_enrollment_census_data(
 
 def task_generate_enrollment_totals(
     path: Path = DATA / "input/enrollment-data.pkl",
-) -> Annotated[pd.DataFrame, DATA_CATALOG["enrollment_totals"]]:
+) -> Annotated[pd.DataFrame, DATA_CATALOG[f"enrollment_totals_{STATE_FIPS}"]]:
     """Generates totals for each enrollment status."""
 
     totals_df = pd.read_pickle(path)
@@ -91,8 +91,8 @@ def task_generate_enrollment_totals(
 
 
 def task_generate_enrollment_proportions(
-    totals_df: Annotated[pd.DataFrame, DATA_CATALOG["enrollment_totals"]],
-) -> Annotated[pd.DataFrame, DATA_CATALOG["enrollment_proportions"]]:
+    totals_df: Annotated[pd.DataFrame, DATA_CATALOG[f"enrollment_totals_{STATE_FIPS}"]],
+) -> Annotated[pd.DataFrame, DATA_CATALOG[f"enrollment_proportions_{STATE_FIPS}"]]:
     """Generates proportions of each enrollment status using enrollment totals."""
 
     df = pd.DataFrame()

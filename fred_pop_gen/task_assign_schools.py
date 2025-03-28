@@ -4,7 +4,7 @@ from typing import Annotated, Any, cast
 import pandas as pd
 from pytask import task
 
-from fred_pop_gen.config import DATA_CATALOG, RNG
+from fred_pop_gen.config import DATA_CATALOG, RNG, STATE_FIPS
 from fred_pop_gen.constants import Enrollment, Grade
 from fred_pop_gen.utils import (
     filter_persons_by_household_enrollment,
@@ -48,7 +48,9 @@ for county in get_county_fips():
             pd.DataFrame,
             DATA_CATALOG[f"households_for_school_assignment_{county}"],
         ],
-        enrollment_df: Annotated[pd.DataFrame, DATA_CATALOG["enrollment_proportions"]],
+        enrollment_df: Annotated[
+            pd.DataFrame, DATA_CATALOG[f"enrollment_proportions_{STATE_FIPS}"]
+        ],
     ) -> Annotated[pd.DataFrame, DATA_CATALOG[f"households_w_enrollment_{county}"]]:
         enrollment_probabilities = enrollment_df.loc[county]
 
