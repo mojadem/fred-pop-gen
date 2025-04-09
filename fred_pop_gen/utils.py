@@ -58,11 +58,14 @@ def get_persons_in_household(hh_id: Hashable, p_df: pd.DataFrame) -> pd.DataFram
     return p_df.loc[p_df["hh_id"] == hh_id]
 
 
-def filter_persons_by_household_enrollment(
+def filter_households_by_resident_enrollment(
     p_df: pd.DataFrame, hh_df: pd.DataFrame, enrollment: Enrollment
 ) -> pd.DataFrame:
-    hh_df = hh_df.loc[hh_df["enrollment"] == enrollment]
-    return p_df.loc[p_df["hh_id"].isin(list(hh_df.index))]
+    def check_household_for_resident_enrollment(hh_id: Hashable) -> bool:
+        hh_persons = get_persons_in_household(hh_id, p_df)
+        return (hh_persons["enrollment"] == enrollment).any()
+
+    return hh_df.loc[hh_df.index.map(check_household_for_resident_enrollment)]
 
 
 def haversine(lat1, lon1, lat2, lon2):

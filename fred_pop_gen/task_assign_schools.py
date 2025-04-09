@@ -4,75 +4,71 @@ from typing import Annotated, Any, cast
 import pandas as pd
 from pytask import task
 
-from fred_pop_gen.config import DATA_CATALOG, RNG, STATE_FIPS
+from fred_pop_gen.config import (
+    DATA_CATALOG,
+    RNG,
+    SCHOOL_ENROLLMENT_CAPACITY_FACTOR,
+    STATE_FIPS,
+)
 from fred_pop_gen.constants import Enrollment, Grade
 from fred_pop_gen.utils import (
-    filter_persons_by_household_enrollment,
+    filter_households_by_resident_enrollment,
     get_county_fips,
     get_persons_in_household,
     haversine,
 )
 
-for county in get_county_fips():
+for _county in get_county_fips():
 
-    @task(id=county)
-    def task_assign_grade_to_persons_in_county(
-        df: Annotated[pd.DataFrame, DATA_CATALOG[f"persons_{county}"]],
-    ) -> Annotated[pd.DataFrame, DATA_CATALOG[f"persons_w_grade_{county}"]]:
-        df["grade"] = df["agep"].apply(map_age_to_grade)
-        return df.loc[~df["grade"].isnull()]
-
-    @task(id=county)
-    def get_households_for_school_assignment_in_county(
-        hh_df: Annotated[pd.DataFrame, DATA_CATALOG[f"households_{county}"]],
-        p_df: Annotated[pd.DataFrame, DATA_CATALOG[f"persons_w_grade_{county}"]],
-    ) -> Annotated[
-        pd.DataFrame, DATA_CATALOG[f"households_for_school_assignment_{county}"]
-    ]:
-        def check_household_for_children(household: pd.Series) -> bool:
-            hh_persons = get_persons_in_household(household.name, p_df)
-
-            # persons_w_grade only includes school aged children, so check that
-            # there is at least one person in the household who is assigned
-            # a grade
-            return not hh_persons.index.intersection(p_df.index).empty
-
-        hh_df = hh_df.loc[hh_df.apply(check_household_for_children, axis=1)]
-
-        return hh_df
-
-    @task(id=county)
-    def assign_enrollment_to_households_in_county(
-        county: Annotated[str, county],
-        hh_df: Annotated[
-            pd.DataFrame,
-            DATA_CATALOG[f"households_for_school_assignment_{county}"],
-        ],
+    @task(id=_county)
+    def task_assign_grade_and_enrollment_to_persons_in_county(
+        county: Annotated[str, _county],
+        p_df: Annotated[pd.DataFrame, DATA_CATALOG[f"persons_{_county}"]],
         enrollment_df: Annotated[
             pd.DataFrame, DATA_CATALOG[f"enrollment_proportions_{STATE_FIPS}"]
         ],
-    ) -> Annotated[pd.DataFrame, DATA_CATALOG[f"households_w_enrollment_{county}"]]:
+    ) -> Annotated[pd.DataFrame, DATA_CATALOG[f"persons_w_grade_enrollment_{_county}"]]:
         enrollment_probabilities = enrollment_df.loc[county]
+        p_non_prek = [
+            enrollment_probabilities["public"],
+            enrollment_probabilities["private"],
+            enrollment_probabilities["not_enrolled"],
+        ]
+        p_prek = [
+            enrollment_probabilities["public_prek"],
+            enrollment_probabilities["private_prek"],
+            enrollment_probabilities["not_enrolled_prek"],
+        ]
 
-        def generate_random_enrollment() -> Enrollment:
+        p_df["grade"] = p_df["agep"].apply(map_age_to_grade)
+
+        # drop non-school-aged people
+        p_df = p_df.loc[p_df["grade"].notna()]
+
+        def generate_random_enrollment(grade: Grade) -> Enrollment:
             choices = [Enrollment.PUBLIC, Enrollment.PRIVATE, Enrollment.NOT_ENROLLED]
-            i = RNG.choice(len(choices), 1, p=enrollment_probabilities.values)[0]
+
+            p = p_prek if grade == Grade.PREK else p_non_prek
+            i = RNG.choice(len(choices), 1, p=p)[0]
 
             return choices[i]
 
-        hh_df["enrollment"] = [generate_random_enrollment() for _ in range(len(hh_df))]
+        p_df["enrollment"] = p_df["grade"].apply(generate_random_enrollment)
 
-        return hh_df
+        return p_df
 
-    @task(id=county)
+    @task(id=_county)
     def get_public_school_household_distances_in_county(
+        p_df: Annotated[
+            pd.DataFrame, DATA_CATALOG[f"persons_w_grade_enrollment_{_county}"]
+        ],
         hh_df: Annotated[
             pd.DataFrame,
-            DATA_CATALOG[f"households_w_enrollment_{county}"],
+            DATA_CATALOG[f"households_{_county}"],
         ],
-        sch_df: Annotated[pd.DataFrame, DATA_CATALOG[f"public_schools_{county}"]],
-    ) -> Annotated[pd.DataFrame, DATA_CATALOG[f"pubsch_hh_distance_{county}"]]:
-        hh_df = hh_df.loc[hh_df["enrollment"] == Enrollment.PUBLIC]
+        sch_df: Annotated[pd.DataFrame, DATA_CATALOG[f"public_schools_{_county}"]],
+    ) -> Annotated[pd.DataFrame, DATA_CATALOG[f"pubsch_hh_distance_{_county}"]]:
+        hh_df = filter_households_by_resident_enrollment(p_df, hh_df, Enrollment.PUBLIC)
 
         hh_ids = hh_df.index.values
         sch_ids = sch_df.index.values
@@ -92,16 +88,15 @@ for county in get_county_fips():
 
         return distance_df.sort_values(by="distance", ascending=True)
 
-    @task(id=county)
+    @task(id=_county)
     def assign_public_schools_in_county(
-        p_df: Annotated[pd.DataFrame, DATA_CATALOG[f"persons_w_grade_{county}"]],
-        hh_df: Annotated[
-            pd.DataFrame, DATA_CATALOG[f"households_w_enrollment_{county}"]
+        p_df: Annotated[
+            pd.DataFrame, DATA_CATALOG[f"persons_w_grade_enrollment_{_county}"]
         ],
-        pubsch_df: Annotated[pd.DataFrame, DATA_CATALOG[f"public_schools_{county}"]],
-        dist_df: Annotated[pd.DataFrame, DATA_CATALOG[f"pubsch_hh_distance_{county}"]],
-    ) -> Annotated[pd.DataFrame, DATA_CATALOG[f"persons_w_school_{county}"]]:
-        p_df = filter_persons_by_household_enrollment(p_df, hh_df, Enrollment.PUBLIC)
+        pubsch_df: Annotated[pd.DataFrame, DATA_CATALOG[f"public_schools_{_county}"]],
+        dist_df: Annotated[pd.DataFrame, DATA_CATALOG[f"pubsch_hh_distance_{_county}"]],
+    ) -> Annotated[pd.DataFrame, DATA_CATALOG[f"persons_w_school_{_county}"]]:
+        p_df = p_df.loc[p_df["enrollment"] == Enrollment.PUBLIC]
         p_df["school_id"] = pd.NA
 
         # track current number of assigned students per school
@@ -117,7 +112,8 @@ for county in get_county_fips():
 
             sch = pubsch_df.loc[edge.sch_id]
 
-            if enrollment[edge.sch_id] > sch["enrollment_total"]:
+            capacity = sch["enrollment_total"] * SCHOOL_ENROLLMENT_CAPACITY_FACTOR
+            if enrollment[edge.sch_id] > capacity:
                 continue
 
             hh_persons = get_persons_in_household(edge.hh_id, p_df)
@@ -139,9 +135,6 @@ for county in get_county_fips():
             enrollment[edge.sch_id] += len(hh_persons)
 
         unassigned_df = p_df[p_df["school_id"].isna()]
-        # TODO: figure out what to do with PREK
-        unassigned_df = unassigned_df.loc[unassigned_df["grade"] != Grade.PREK]
-        print(unassigned_df)
         assert unassigned_df.empty
 
         return p_df
@@ -149,6 +142,8 @@ for county in get_county_fips():
 
 def map_age_to_grade(age: int) -> Grade | None:
     match age:
+        case 3:
+            return Grade.PREK
         case 4:
             return Grade.PREK
         case 5:
