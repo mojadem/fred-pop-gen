@@ -8,10 +8,11 @@ DATA_CATALOG = DataCatalog()
 RNG = np.random.default_rng(0)
 
 # TODO: paramaterize and support multiple of each file
-STATE_FIPS = 56
-STATE_ABBR = "WY"
+STATE_FIPS = "10"
+STATE_ABBR = "DE"
 CENSUS_YEAR = 2019
 
+MAX_DISTANCE_FOR_PUBLIC_SCHOOL_HOUSEHOLD_PAIRS_KM = 50
 SCHOOL_ENROLLMENT_CAPACITY_FACTOR = 1.2
 
 PERSONS_FILE = DATA / f"input/{STATE_FIPS}_{CENSUS_YEAR}_persons.parquet"
