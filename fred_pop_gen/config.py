@@ -3,16 +3,16 @@ from pathlib import Path
 from pytask import DataCatalog
 import numpy as np
 
-DATA = Path(__file__).parent.joinpath("..", "data").resolve()
-DATA_CATALOG = DataCatalog()
-RNG = np.random.default_rng(0)
-
 # TODO: paramaterize and support multiple of each file
-STATE_FIPS = 56
+STATE_FIPS = "56"
 STATE_ABBR = "WY"
 CENSUS_YEAR = 2019
 
-SCHOOL_ENROLLMENT_CAPACITY_FACTOR = 1.2
+SEED = 123
+
+DATA = Path(__file__).parent.joinpath("..", "data").resolve()
+DATA_CATALOG = DataCatalog()
+RNG = np.random.default_rng(SEED)
 
 PERSONS_FILE = DATA / f"input/{STATE_FIPS}_{CENSUS_YEAR}_persons.parquet"
 HOUSEHOLDS_FILE = DATA / f"input/{STATE_ABBR}_{CENSUS_YEAR}_households_w_geom.parquet"
