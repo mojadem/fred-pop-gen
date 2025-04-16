@@ -68,18 +68,7 @@ def filter_households_by_resident_enrollment(
     return hh_df.loc[hh_df.index.map(check_household_for_resident_enrollment)]
 
 
-def haversine(lat1, lon1, lat2, lon2):
-    """
-    Calculate the distance between two points on Earth using the Haversine formula.
-
-    Parameters:
-    lat1, lon1: Latitude and longitude of the first point in degrees.
-    lat2, lon2: Latitude and longitude of the second point in degrees.
-
-    Returns:
-    Distance in kilometers.
-    """
-
+def haversine(lat1: np.ndarray, lon1: np.ndarray, lat2: np.ndarray, lon2: np.ndarray):
     R = 3956  # Radius of Earth in miles
 
     lat1, lon1, lat2, lon2 = map(np.radians, [lat1, lon1, lat2, lon2])

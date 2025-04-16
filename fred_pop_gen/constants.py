@@ -28,7 +28,7 @@ class Grade(Enum):
     TWELFTH = 13
 
     @staticmethod
-    def is_grade_in_range(
-        grade: "Grade", lower_bound: "Grade", upper_bound: "Grade"
-    ) -> bool:
-        return grade.value >= lower_bound.value and grade.value <= upper_bound.value
+    def range(lower_bound: "Grade", upper_bound: "Grade") -> set["Grade"]:
+        return {
+            Grade(value) for value in range(lower_bound.value, upper_bound.value + 1)
+        }
