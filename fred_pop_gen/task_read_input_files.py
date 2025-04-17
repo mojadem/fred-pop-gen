@@ -91,7 +91,14 @@ def task_read_public_schools_file(
     """Loads the public schools file into a DataFrame."""
 
     df = pd.read_csv(path)
-    df = strip_school_file_column_names(df)
+
+    # remove suffix ([Public School]...) from column names
+    rename_columns = {}
+    for column in df.columns:
+        column = str(column)
+        stripped = re.sub(r" \[.*$", "", column)
+        rename_columns.update({column: stripped})
+    df = df.rename(columns=rename_columns)
 
     cols = df.columns.tolist()
     expected_cols = [
@@ -130,29 +137,38 @@ def task_read_private_schools_file(
     """Loads the private schools file into a DataFrame."""
 
     df = pd.read_csv(path)
-    df = strip_school_file_column_names(df)
 
-    cols = df.columns.tolist()
-    expected_cols = [
-        "Private School Name",
-        "State Name",
-        "School ID - NCES Assigned",
-        "ANSI/FIPS County Code",
-        "Lowest Grade Taught",
-        "Highest Grade Taught",
-        "Total Students (Ungraded & PK-12)",
+    fips_cols = [
+        "PSTANSI",
+        "PCNTY",
     ]
-    assert sorted(cols) == sorted(expected_cols), (
-        f"private schools file did not contain expected columns: expected = {sorted(expected_cols)}, actual = {sorted(cols)}"
-    )
+    df[fips_cols] = df[fips_cols].astype(str)
+    df["county_fips"] = df["PSTANSI"].str.zfill(2) + df["PCNTY"].str.zfill(3)
 
     column_map = {
-        "School ID - NCES Assigned": "id",
-        "ANSI/FIPS County Code": "county_fips",
-        "Lowest Grade Taught": "lowest_grade",
-        "Highest Grade Taught": "highest_grade",
-        "Total Students (Ungraded & PK-12)": "enrollment_total",
+        "PPIN": "id",
+        "county_fips": "county_fips",
+        "LONGITUDE": "lon",
+        "LATITUDE": "lat",
+        "LOGR": "lowest_grade",
+        "HIGR": "highest_grade",
+        "P305": "enrollment_total",
     }
+
+    # remove suffix from column names
+    rename_columns = {
+        original: stripped
+        for original in df.columns
+        for stripped in column_map
+        if original.startswith(stripped)
+    }
+    df = df.rename(columns=rename_columns)
+
+    for col in column_map:
+        assert col in df.columns, (
+            f"public schools file did not contain expected column: expected = {col}"
+        )
+
     df = format_df(df, column_map, drop=True)
     df = post_format_schools_df(df)
 
@@ -173,21 +189,6 @@ def format_df(df: pd.DataFrame, column_map: dict[str, str], drop=False) -> pd.Da
     return df
 
 
-def strip_school_file_column_names(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    The public and private school files contain a suffix ('[Public School]...'
-    or '[Private School]...') on all column names. Here, we simply strip that suffix
-    out as a preprocessing step.
-    """
-
-    for column in df.columns:
-        column = str(column)
-        stripped = re.sub(r" \[.*$", "", column)
-        df = df.rename(columns={column: stripped})
-
-    return df
-
-
 def post_format_schools_df(df: pd.DataFrame) -> pd.DataFrame:
     df["lowest_grade"] = df["lowest_grade"].apply(map_grade_level)
     df["highest_grade"] = df["highest_grade"].apply(map_grade_level)
@@ -202,39 +203,44 @@ def post_format_schools_df(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def map_grade_level(grade: str) -> Grade | None:
-    grade = grade.lower().strip()
+def map_grade_level(grade: str | int) -> Grade | None:
+    """
+    Maps the grade level in school files to a Grade enum. The public school file
+    uses string values while the private school file uses int values.
+    """
+    if type(grade) is str:
+        grade = grade.lower().strip()
 
     match grade:
-        case "prekindergarten":
+        case "prekindergarten" | 2:
             return Grade.PREK
-        case "kindergarten":
+        case "kindergarten" | 3:
             return Grade.K
-        case "transitional kindergarten":
+        case "transitional kindergarten" | 4:
             return Grade.K
-        case "1st grade":
+        case "1st grade" | 5 | 6:  # 5 is transitional first grade
             return Grade.FIRST
-        case "2nd grade":
+        case "2nd grade" | 7:
             return Grade.SECOND
-        case "3rd grade":
+        case "3rd grade" | 8:
             return Grade.THIRD
-        case "4th grade":
+        case "4th grade" | 9:
             return Grade.FOURTH
-        case "5th grade":
+        case "5th grade" | 10:
             return Grade.FIFTH
-        case "6th grade":
+        case "6th grade" | 11:
             return Grade.SIXTH
-        case "7th grade":
+        case "7th grade" | 12:
             return Grade.SEVENTH
-        case "8th grade":
+        case "8th grade" | 13:
             return Grade.EIGHTH
-        case "9th grade":
+        case "9th grade" | 14:
             return Grade.NINTH
-        case "10th grade":
+        case "10th grade" | 15:
             return Grade.TENTH
-        case "11th grade":
+        case "11th grade" | 16:
             return Grade.ELEVENTH
-        case "12th grade":
+        case "12th grade" | 17:
             return Grade.TWELFTH
         case _:
             return None
