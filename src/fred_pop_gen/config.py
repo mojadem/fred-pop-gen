@@ -10,7 +10,9 @@ CENSUS_YEAR = 2019
 
 SEED = 123
 
-DATA = Path(__file__).parent.joinpath("..", "data").resolve()
+SRC = Path(__file__).parent.resolve()
+DATA = SRC.joinpath("..", "..", "data").resolve()
+
 DATA_CATALOG = DataCatalog()
 RNG = np.random.default_rng(SEED)
 
