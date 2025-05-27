@@ -4,10 +4,9 @@ from typing import Annotated
 from fred_pop_gen.utils import census_api_call
 import pandas as pd
 import pytask
-import requests
 from pytask import Product
 
-from fred_pop_gen.config import CENSUS_YEAR, DATA, DATA_CATALOG, STATE_FIPS
+from fred_pop_gen.config import DATA, DATA_CATALOG, STATE_FIPS
 
 
 # below are the ACS variables needed from the census API

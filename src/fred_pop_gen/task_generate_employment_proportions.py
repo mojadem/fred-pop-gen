@@ -6,7 +6,7 @@ import pandas as pd
 import pytask
 from pytask import Product
 
-from fred_pop_gen.config import CENSUS_YEAR, DATA, DATA_CATALOG, STATE_FIPS
+from fred_pop_gen.config import DATA, DATA_CATALOG, STATE_FIPS
 from fred_pop_gen.utils import census_api_call
 
 MALE_TOTAL_COLS = [
