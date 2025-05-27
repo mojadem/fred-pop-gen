@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Annotated
 
+from fred_pop_gen.utils import census_api_call
 import pandas as pd
 import pytask
 import requests
@@ -75,15 +76,7 @@ def task_get_enrollment_census_data(
 ) -> None:
     """Saves enrollment data from the Census API."""
 
-    df = pd.DataFrame()
-
-    url = f"https://api.census.gov/data/{CENSUS_YEAR}/acs/acs5?get={','.join(API_VARS)}&for=county:*&in=state:{STATE_FIPS}"
-    res = requests.get(url)
-    res.raise_for_status()
-
-    data = res.json()
-    df = pd.DataFrame(data[1:], columns=data[0])
-    df[API_VARS] = df[API_VARS].astype("int32")
+    df = census_api_call(API_VARS)
 
     df.to_pickle(path)
 

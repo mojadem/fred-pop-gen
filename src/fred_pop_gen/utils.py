@@ -1,4 +1,6 @@
+from functools import reduce
 from typing import Hashable
+
 import numpy as np
 import pandas as pd
 import requests
@@ -81,3 +83,26 @@ def haversine(lat1: np.ndarray, lon1: np.ndarray, lat2: np.ndarray, lon2: np.nda
 
     distance = R * c
     return distance
+
+
+def census_api_call(api_vars: list[str]) -> pd.DataFrame:
+    CHUNK_SIZE = 50
+    dfs = []
+
+    for i in range(0, len(api_vars), CHUNK_SIZE):
+        chunk_api_vars = api_vars[i : i + CHUNK_SIZE]
+
+        url = f"https://api.census.gov/data/{CENSUS_YEAR}/acs/acs5?get={','.join(chunk_api_vars)}&for=county:*&in=state:{STATE_FIPS}"
+
+        res = requests.get(url)
+        res.raise_for_status()
+
+        data = res.json()
+        df = pd.DataFrame(data[1:], columns=data[0])
+        dfs.append(df)
+
+    def merge_df(l_df, r_df):
+        return pd.merge(l_df, r_df, on=["state", "county"])
+
+    merged_df = reduce(merge_df, dfs)
+    return merged_df
