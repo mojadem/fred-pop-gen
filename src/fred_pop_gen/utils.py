@@ -105,4 +105,5 @@ def census_api_call(api_vars: list[str]) -> pd.DataFrame:
         return pd.merge(l_df, r_df, on=["state", "county"])
 
     merged_df = reduce(merge_df, dfs)
+    merged_df[api_vars] = merged_df[api_vars].astype("int32")
     return merged_df
