@@ -48,10 +48,7 @@ def task_read_households_file(
 
     cols = df.columns.tolist()
     expected_cols = [
-        "GEOID",
-        "geometry",
-        "lon_4326",
-        "lat_4326",
+        "hh_id",
         "hh_age",
         "hh_income",
         "hh_race",
@@ -62,6 +59,8 @@ def task_read_households_file(
         "county_fips",
         "tract_fips",
         "blkgrp_fips",
+        "lon_4326",
+        "lat_4326",
     ]
     assert cols == expected_cols, (
         f"households file did not contain expected columns: expected = {expected_cols}, actual = {cols}"

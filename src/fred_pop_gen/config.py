@@ -17,6 +17,6 @@ DATA_CATALOG = DataCatalog()
 RNG = np.random.default_rng(SEED)
 
 PERSONS_FILE = DATA / f"input/{STATE_FIPS}_{CENSUS_YEAR}_persons.parquet"
-HOUSEHOLDS_FILE = DATA / f"input/{STATE_ABBR}_{CENSUS_YEAR}_households_w_geom.parquet"
+HOUSEHOLDS_FILE = DATA / f"input/{STATE_ABBR}_{CENSUS_YEAR}_households.parquet"
 PUBLIC_SCHOOLS_FILE = DATA / "input/public-schools.csv"
 PRIVATE_SCHOOLS_FILE = DATA / "input/private-schools.csv"
