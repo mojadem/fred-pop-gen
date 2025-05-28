@@ -169,4 +169,6 @@ def generate_proportions(
         bucket = CENSUS_VAR_BUCKET_MAP[e_col]
         df[bucket] = totals_df[e_col] / totals_df[t_col]
 
+    df = df.set_index("county_fips")
+
     return df
