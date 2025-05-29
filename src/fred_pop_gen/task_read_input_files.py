@@ -80,6 +80,7 @@ def task_read_households_file(
         "lon_4326": "lon",
     }
     df = format_df(df, column_map)
+    df = df.set_index("hh_id")
 
     return df
 
