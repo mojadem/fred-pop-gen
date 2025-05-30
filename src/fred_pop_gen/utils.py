@@ -60,6 +60,10 @@ def get_persons_in_household(hh_id: Hashable, p_df: pd.DataFrame) -> pd.DataFram
     return p_df.loc[p_df["hh_id"] == hh_id]
 
 
+def get_county_of_household(hh_id: str, hh_df: pd.DataFrame) -> str:
+    return hh_df.loc[hh_id]["county_fips"]
+
+
 def filter_households_by_resident_enrollment(
     p_df: pd.DataFrame, hh_df: pd.DataFrame, enrollment: Enrollment
 ) -> pd.DataFrame:
