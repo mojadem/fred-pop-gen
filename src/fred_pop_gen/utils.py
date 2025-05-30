@@ -1,12 +1,10 @@
 from functools import reduce
-from typing import Hashable
 
 import numpy as np
 import pandas as pd
 import requests
 
 from fred_pop_gen.config import CENSUS_YEAR, STATE_FIPS, DATA
-from fred_pop_gen.constants import Enrollment
 
 COUNTIES_FILE = DATA / f"input/counties-{STATE_FIPS}.txt"
 
@@ -54,24 +52,6 @@ def get_county_fips() -> list[str]:
 
 def filter_df_by_county(df: pd.DataFrame, county_fips: str) -> pd.DataFrame:
     return df.loc[df["county_fips"] == county_fips]
-
-
-def get_persons_in_household(hh_id: Hashable, p_df: pd.DataFrame) -> pd.DataFrame:
-    return p_df.loc[p_df["hh_id"] == hh_id]
-
-
-def get_county_of_household(hh_id: str, hh_df: pd.DataFrame) -> str:
-    return hh_df.loc[hh_id]["county_fips"]
-
-
-def filter_households_by_resident_enrollment(
-    p_df: pd.DataFrame, hh_df: pd.DataFrame, enrollment: Enrollment
-) -> pd.DataFrame:
-    def check_household_for_resident_enrollment(hh_id: Hashable) -> bool:
-        hh_persons = get_persons_in_household(hh_id, p_df)
-        return (hh_persons["enrollment"] == enrollment).any()
-
-    return hh_df.loc[hh_df.index.map(check_household_for_resident_enrollment)]
 
 
 def haversine(lat1: np.ndarray, lon1: np.ndarray, lat2: np.ndarray, lon2: np.ndarray):

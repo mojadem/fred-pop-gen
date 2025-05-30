@@ -40,7 +40,6 @@ for _county in get_county_fips():
 
     @task(id=_county)
     def task_assign_public_schools_in_county(
-        county: Annotated[str, _county],
         p_df: Annotated[
             pd.DataFrame, DATA_CATALOG[f"persons_w_pub_enrollment_{_county}"]
         ],

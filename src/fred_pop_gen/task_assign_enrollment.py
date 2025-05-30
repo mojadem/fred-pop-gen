@@ -8,9 +8,6 @@ from fred_pop_gen.config import (
     STATE_FIPS,
 )
 from fred_pop_gen.constants import Enrollment, Grade
-from fred_pop_gen.utils import (
-    get_county_of_household,
-)
 
 
 def task_assign_grade_to_persons(
@@ -38,7 +35,7 @@ def task_assign_enrollment_to_persons(
         hh_id = str(person["hh_id"])
         assert hh_id in hh_df.index
 
-        county = get_county_of_household(hh_id, hh_df)
+        county = str(person["county_fips"])
         enrollment_probabilities = enrollment_df.loc[county]
 
         p_non_prek = [
