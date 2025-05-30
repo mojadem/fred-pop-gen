@@ -14,7 +14,7 @@ from fred_pop_gen.utils import (
 
 
 def task_assign_grade_to_persons(
-    p_df: Annotated[pd.DataFrame, DATA_CATALOG[f"persons_{STATE_FIPS}"]],
+    p_df: Annotated[pd.DataFrame, DATA_CATALOG[f"persons_w_geo_{STATE_FIPS}"]],
 ) -> Annotated[pd.DataFrame, DATA_CATALOG[f"persons_w_grade_{STATE_FIPS}"]]:
     """
     Maps persons' age to grade level, filtering out non-school-aged persons.
