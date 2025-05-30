@@ -200,6 +200,9 @@ def post_format_schools_df(df: pd.DataFrame) -> pd.DataFrame:
     # TODO: should we recover schools with bad valuees instead of just dropping?
     df = df.dropna()
 
+    # filter by the current state
+    df = df.loc[df["county_fips"].str.startswith(STATE_FIPS)]
+
     return df
 
 
