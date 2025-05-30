@@ -18,8 +18,9 @@ from fred_pop_gen.constants import Grade
 def task_read_persons_file(
     path: Path = PERSONS_FILE,
 ) -> Annotated[pd.DataFrame, DATA_CATALOG[f"persons_{STATE_FIPS}"]]:
-    """Loads the persons file into a DataFrame."""
-
+    """
+    Reads the persons file into a DataFrame.
+    """
     df = pd.read_parquet(path)
 
     cols = df.columns.tolist()
@@ -42,8 +43,9 @@ def task_read_persons_file(
 def task_read_households_file(
     path: Path = HOUSEHOLDS_FILE,
 ) -> Annotated[pd.DataFrame, DATA_CATALOG[f"households_{STATE_FIPS}"]]:
-    """Loads the households file into a DataFrame."""
-
+    """
+    Reads the households file into a DataFrame.
+    """
     df = pd.read_parquet(path)
 
     cols = df.columns.tolist()
@@ -88,8 +90,9 @@ def task_read_households_file(
 def task_read_public_schools_file(
     path: Path = PUBLIC_SCHOOLS_FILE,
 ) -> Annotated[pd.DataFrame, DATA_CATALOG[f"public_schools_{STATE_FIPS}"]]:
-    """Loads the public schools file into a DataFrame."""
-
+    """
+    Reads the public schools file into a DataFrame.
+    """
     df = pd.read_csv(path)
 
     # remove suffix ([Public School]...) from column names
@@ -134,8 +137,9 @@ def task_read_public_schools_file(
 def task_read_private_schools_file(
     path: Path = PRIVATE_SCHOOLS_FILE,
 ) -> Annotated[pd.DataFrame, DATA_CATALOG[f"private_schools_{STATE_FIPS}"]]:
-    """Loads the private schools file into a DataFrame."""
-
+    """
+    Reads the private schools file into a DataFrame.
+    """
     df = pd.read_csv(path)
 
     fips_cols = [
@@ -180,7 +184,6 @@ def format_df(df: pd.DataFrame, column_map: dict[str, str], drop=False) -> pd.Da
     Formats a DataFrame by renaming columns based on a provided mapping and
     optionally dropping columns that are not in the mapping.
     """
-
     if drop:
         df = df.drop(columns=[col for col in df.columns if col not in column_map])
 

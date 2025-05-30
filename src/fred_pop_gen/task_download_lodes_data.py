@@ -23,6 +23,9 @@ WAC_FILE_URL = f"{LODES_BASE_URL}/wac/{WAC_FILE_NAME}"
 def task_download_lodes_od_file(
     path: Annotated[Path, Product] = OD_FILE_PATH,
 ) -> None:
+    """
+    Downloads the LODES OD (Origin-Destination) file to disk.
+    """
     download_file(OD_FILE_URL, path)
 
 
@@ -30,6 +33,9 @@ def task_download_lodes_od_file(
 def task_download_lodes_wac_file(
     path: Annotated[Path, Product] = WAC_FILE_PATH,
 ) -> None:
+    """
+    Downloads the LODES WAC (Workplace Area Characteristics) file to disk.
+    """
     download_file(WAC_FILE_URL, path)
 
 

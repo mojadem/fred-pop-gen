@@ -31,6 +31,11 @@ def task_assign_enrollment_to_persons(
         pd.DataFrame, DATA_CATALOG[f"enrollment_proportions_{STATE_FIPS}"]
     ],
 ) -> Annotated[pd.DataFrame, DATA_CATALOG[f"persons_w_enrollment_{STATE_FIPS}"]]:
+    """
+    Assigns a random enrollment to all persons in the state using the generated
+    enrollment proportions for each county.
+    """
+
     def generate_random_enrollment(person: pd.Series) -> Enrollment:
         hh_id = str(person["hh_id"])
         assert hh_id in hh_df.index

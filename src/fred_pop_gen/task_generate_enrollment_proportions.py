@@ -73,7 +73,9 @@ API_VARS = (
 def task_get_enrollment_census_data(
     path: Annotated[Path, Product] = DATA / f"input/enrollment-data-{STATE_FIPS}.pkl",
 ) -> None:
-    """Saves enrollment data from the Census API."""
+    """
+    Saves the enrollment data from the Census API.
+    """
 
     df = census_api_call(API_VARS)
 
@@ -83,7 +85,9 @@ def task_get_enrollment_census_data(
 def task_generate_enrollment_totals(
     path: Path = DATA / f"input/enrollment-data-{STATE_FIPS}.pkl",
 ) -> Annotated[pd.DataFrame, DATA_CATALOG[f"enrollment_totals_{STATE_FIPS}"]]:
-    """Generates totals for each enrollment status."""
+    """
+    Generates totals for each enrollment status.
+    """
 
     totals_df = pd.read_pickle(path)
     df = pd.DataFrame()
@@ -110,7 +114,9 @@ def task_generate_enrollment_totals(
 def task_generate_enrollment_proportions(
     totals_df: Annotated[pd.DataFrame, DATA_CATALOG[f"enrollment_totals_{STATE_FIPS}"]],
 ) -> Annotated[pd.DataFrame, DATA_CATALOG[f"enrollment_proportions_{STATE_FIPS}"]]:
-    """Generates proportions of each enrollment status using enrollment totals."""
+    """
+    Generates proportions of each enrollment status using enrollment totals.
+    """
 
     df = pd.DataFrame()
 

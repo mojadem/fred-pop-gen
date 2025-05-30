@@ -9,6 +9,10 @@ from pytask import Product
 from fred_pop_gen.config import DATA, DATA_CATALOG, STATE_FIPS
 from fred_pop_gen.utils import census_api_call
 
+
+# below are the ACS variables needed from the census API
+# reference: https://api.census.gov/data/2019/acs/acs5/variables.html
+
 MALE_TOTAL_COLS = [
     "B23001_003E",  # male ages 16-19 - total
     "B23001_010E",  # male ages 20-21 - total
@@ -138,17 +142,22 @@ API_VARS = (
 def task_get_employment_census_data(
     path: Annotated[Path, Product] = DATA / f"input/employment-data-{STATE_FIPS}.pkl",
 ) -> None:
+    """
+    Saves the employment data from the Census API.
+    """
     df = census_api_call(API_VARS)
 
     df.to_pickle(path)
 
 
-@pytask.mark.wip
 def task_generate_employment_proportions(
     path: Path = DATA / f"input/employment-data-{STATE_FIPS}.pkl",
 ) -> Annotated[
     Dict[str, pd.DataFrame], DATA_CATALOG[f"employment_proportions_{STATE_FIPS}"]
 ]:
+    """
+    Generates the employment proportions. This is done by sex, age, and county.
+    """
     totals_df = pd.read_pickle(path)
     assert isinstance(totals_df, pd.DataFrame)
 
@@ -161,6 +170,11 @@ def task_generate_employment_proportions(
 def generate_proportions(
     employed_cols: list[str], total_cols: list[str], totals_df: pd.DataFrame
 ) -> pd.DataFrame:
+    """
+    Computes the proportion of each value in `employed_cols`, which is the
+    number of employed persons, to each corresponding value in `total_cols`,
+    which is the total number of persons, in each age bucket.
+    """
     df = pd.DataFrame()
     df["county_fips"] = totals_df["state"] + totals_df["county"]
 

@@ -12,7 +12,7 @@ COUNTIES_FILE = DATA / f"input/counties-{STATE_FIPS}.txt"
 def _download_county_fips() -> None:
     """
     Downloads county FIPS codes from the census API and writes them to
-    COUNTIES_FILE.
+    `COUNTIES_FILE`.
     """
     # NOTE: we are using a DUMMY variable (B01001_001E) in the API call
     # all we really need is the state and county values
@@ -55,6 +55,10 @@ def filter_df_by_county(df: pd.DataFrame, county_fips: str) -> pd.DataFrame:
 
 
 def haversine(lat1: np.ndarray, lon1: np.ndarray, lat2: np.ndarray, lon2: np.ndarray):
+    """
+    Computes haversize distance between numpy arrays of latitude and longitude
+    coordinates.
+    """
     R = 3956  # Radius of Earth in miles
 
     lat1, lon1, lat2, lon2 = map(np.radians, [lat1, lon1, lat2, lon2])
@@ -70,6 +74,11 @@ def haversine(lat1: np.ndarray, lon1: np.ndarray, lat2: np.ndarray, lon2: np.nda
 
 
 def census_api_call(api_vars: list[str]) -> pd.DataFrame:
+    """
+    Executes a Census API call. The Census API limits API calls to a maximum of
+    50 API variables per call, so the `api_vars` inputted are split into chunks
+    of 50, and the data for each call is merged together.
+    """
     CHUNK_SIZE = 50
     dfs = []
 

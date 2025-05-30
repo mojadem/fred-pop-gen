@@ -22,6 +22,12 @@ for _county in get_county_fips():
             Product,
         ],
     ) -> None:
+        """
+        Writes data from all county public school assignments to disk so that
+        they can be waited for and collected.
+
+        See: https://pytask-dev.readthedocs.io/en/stable/how_to_guides/provisional_nodes_and_task_generators.html
+        """
         df.to_pickle(dir.joinpath(f"{county}.pkl"))
 
 
@@ -35,6 +41,11 @@ def task_collect_school_output(
     ],
     p_df: Annotated[pd.DataFrame, DATA_CATALOG[f"persons_{STATE_FIPS}"]],
 ) -> Annotated[pd.DataFrame, DATA_CATALOG[f"persons_w_school_{STATE_FIPS}"]]:
+    """
+    Collects all county public school output and merges it with private school
+    output, then updates school assignment fields in the complete state persons
+    df.
+    """
     pubsch_df = pd.concat([pd.read_pickle(path) for path in pubsch_paths])
     sch_df = pd.concat([pubsch_df, privsch_df])
 

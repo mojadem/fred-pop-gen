@@ -24,6 +24,9 @@ for _county in get_county_fips():
             pd.DataFrame, DATA_CATALOG[f"persons_w_enrollment_{STATE_FIPS}"]
         ],
     ) -> Annotated[pd.DataFrame, DATA_CATALOG[f"persons_w_pub_enrollment_{_county}"]]:
+        """
+        Filters persons by county and public enrollment.
+        """
         p_df = p_df.loc[p_df["county_fips"] == county]
         p_df = p_df.loc[p_df["enrollment"] == Enrollment.PUBLIC]
 
@@ -36,6 +39,9 @@ for _county in get_county_fips():
         ],
         sch_df: Annotated[pd.DataFrame, DATA_CATALOG[f"public_schools_{_county}"]],
     ) -> Annotated[pd.DataFrame, DATA_CATALOG[f"public_hh_distance_{_county}"]]:
+        """
+        Gets the school distances for public schools by county.
+        """
         return get_school_distances(p_df, sch_df)
 
     @task(id=_county)
@@ -46,12 +52,18 @@ for _county in get_county_fips():
         sch_df: Annotated[pd.DataFrame, DATA_CATALOG[f"public_schools_{_county}"]],
         dist_df: Annotated[pd.DataFrame, DATA_CATALOG[f"public_hh_distance_{_county}"]],
     ) -> Annotated[pd.DataFrame, DATA_CATALOG[f"persons_w_public_school_{_county}"]]:
+        """
+        Assigns public schools by county.
+        """
         return assign_schools_to_persons(p_df, sch_df, dist_df)
 
 
 def task_get_persons_for_private_school_assignment(
     p_df: Annotated[pd.DataFrame, DATA_CATALOG[f"persons_w_enrollment_{STATE_FIPS}"]],
 ) -> Annotated[pd.DataFrame, DATA_CATALOG[f"persons_w_priv_enrollment_{STATE_FIPS}"]]:
+    """
+    Filters persons by private enrollment.
+    """
     p_df = p_df.loc[p_df["enrollment"] == Enrollment.PRIVATE]
 
     return p_df
@@ -63,6 +75,9 @@ def task_get_private_school_distances(
     ],
     sch_df: Annotated[pd.DataFrame, DATA_CATALOG[f"private_schools_{STATE_FIPS}"]],
 ) -> Annotated[pd.DataFrame, DATA_CATALOG[f"private_school_distances_{STATE_FIPS}"]]:
+    """
+    Gets the school distances for private schools by state.
+    """
     return get_school_distances(p_df, sch_df)
 
 
@@ -75,10 +90,21 @@ def task_assign_private_schools(
         pd.DataFrame, DATA_CATALOG[f"private_school_distances_{STATE_FIPS}"]
     ],
 ) -> Annotated[pd.DataFrame, DATA_CATALOG[f"persons_w_private_school_{STATE_FIPS}"]]:
+    """
+    Assigns private schools by state.
+    """
     return assign_schools_to_persons(p_df, sch_df, dist_df)
 
 
 def get_school_distances(p_df: pd.DataFrame, sch_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Finds the distance between every possible pair of person and school in
+    the provided dataframes. The persons and school dataframes will form a
+    complete bipartite graph. The resulting dataframe will have the id of
+    the person and school forming the pair, as well as the distance between
+    the person (which is merged from the household df into the person df in
+    `task_merge_p_hh_df`) and the school.
+    """
     p_idx, sch_idx = np.meshgrid(
         p_df.index.to_numpy(), sch_df.index.to_numpy(), indexing="ij"
     )
@@ -93,7 +119,6 @@ def get_school_distances(p_df: pd.DataFrame, sch_df: pd.DataFrame) -> pd.DataFra
     distances = haversine(p_lat, p_lon, sch_lat, sch_lon)
 
     df = pd.DataFrame({"p_id": p_idx, "sch_id": sch_idx, "distance": distances})
-    df = df.sort_values(by="distance", ascending=True)
 
     return df
 
@@ -101,7 +126,25 @@ def get_school_distances(p_df: pd.DataFrame, sch_df: pd.DataFrame) -> pd.DataFra
 def assign_schools_to_persons(
     p_df: pd.DataFrame, sch_df: pd.DataFrame, dist_df: pd.DataFrame
 ) -> pd.DataFrame:
+    """
+    Assigns the provided persons to the provided schools using the distances
+    computed in `get_school_distances`, which contain person-school pairs. The
+    algorithm iterates through these pairs in order of increasing distance such
+    that the persons closest to schools will be assigned first.
+
+    Assignment to a school will occur if:
+        - The school still has remaining capacity
+        - The person has ot yet been assigned
+        - The school offers the grade level of the person
+
+    After the main loop, some post-processing is done to assign leftover
+    students to schools. This is done to account for inconsistencies in the
+    generated population, the computed enrollment proportions, and the reported
+    school capacities.
+    """
     p_df["school_id"] = None
+
+    dist_df = dist_df.sort_values(by="distance", ascending=True)
 
     # track current number of assigned students per school
     enrollment = {sch_id: 0 for sch_id in sch_df.index.to_list()}
